@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Music, Shield, Users, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,11 +10,34 @@ import { Card, CardContent } from "@/components/ui/card"
 import { AdminLogin } from "@/components/admin-login"
 import { CriteriaDisplay } from "@/components/criteria-display"
 import { SearchResults } from "@/components/search-results"
+import { BannedArtistsModal } from "@/components/banned-artists-modal"
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isSearching, setIsSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<any[]>([])
+  const [showCriteria, setShowCriteria] = useState(false)
+  const [showBannedArtists, setShowBannedArtists] = useState(false)
+  const [criteria, setCriteria] = useState({ maxStreams: 1000000, bannedArtists: [] })
+  const [isLoadingCriteria, setIsLoadingCriteria] = useState(true)
+
+  useEffect(() => {
+    const fetchCriteria = async () => {
+      try {
+        const response = await fetch("/api/criteria")
+        if (response.ok) {
+          const data = await response.json()
+          setCriteria(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch criteria:", error)
+      } finally {
+        setIsLoadingCriteria(false)
+      }
+    }
+
+    fetchCriteria()
+  }, [])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,6 +56,15 @@ export default function HomePage() {
     }
   }
 
+  const formatStreamCount = (count: number) => {
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M+`
+    } else if (count >= 1000) {
+      return `${(count / 1000).toFixed(0)}K+`
+    }
+    return count.toString()
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -43,6 +75,10 @@ export default function HomePage() {
             <h1 className="text-xl font-semibold text-foreground">Song Criteria Checker</h1>
           </div>
           <div className="flex items-center gap-4">
+            <Button variant="outline" size="sm" onClick={() => setShowCriteria(true)} className="text-sm">
+              <Shield className="h-4 w-4 mr-2" />
+              View Criteria
+            </Button>
             <AdminLogin />
           </div>
         </div>
@@ -53,7 +89,7 @@ export default function HomePage() {
         <div className="max-w-2xl mx-auto text-center mb-12">
           <h2 className="text-4xl font-bold text-foreground mb-4">Check if Your Song Meets Our Criteria</h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Search for any song on Spotify
+            Search for any song on Spotify and instantly see if it passes our streaming and artist criteria
           </p>
 
           {/* Search Form */}
@@ -75,19 +111,33 @@ export default function HomePage() {
           </form>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <Card>
               <CardContent className="p-4 text-center">
                 <TrendingUp className="h-8 w-8 text-accent mx-auto mb-2" />
-                <div className="text-2xl font-bold text-foreground">1M+</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {isLoadingCriteria ? "..." : formatStreamCount(criteria.maxStreams)}
+                </div>
                 <div className="text-sm text-muted-foreground">Max Stream Limit</div>
+              </CardContent>
+            </Card>
+            <Card
+              className="cursor-pointer hover:bg-accent/5 transition-colors"
+              onClick={() => setShowBannedArtists(true)}
+            >
+              <CardContent className="p-4 text-center">
+                <Users className="h-8 w-8 text-accent mx-auto mb-2" />
+                <div className="text-2xl font-bold text-foreground">
+                  {isLoadingCriteria ? "..." : criteria.bannedArtists.length}
+                </div>
+                <div className="text-sm text-muted-foreground">Banned Artists</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <Users className="h-8 w-8 text-accent mx-auto mb-2" />
-                <div className="text-2xl font-bold text-foreground">0</div>
-                <div className="text-sm text-muted-foreground">Banned Artists</div>
+                <Shield className="h-8 w-8 text-accent mx-auto mb-2" />
+                <div className="text-2xl font-bold text-foreground">Real-time</div>
+                <div className="text-sm text-muted-foreground">Criteria Check</div>
               </CardContent>
             </Card>
           </div>
@@ -97,6 +147,15 @@ export default function HomePage() {
         <SearchResults results={searchResults} isLoading={isSearching} />
       </main>
 
+      {/* Criteria Display Modal */}
+      <CriteriaDisplay open={showCriteria} onOpenChange={setShowCriteria} />
+
+      {/* Banned Artists Modal */}
+      <BannedArtistsModal
+        open={showBannedArtists}
+        onOpenChange={setShowBannedArtists}
+        bannedArtists={criteria.bannedArtists}
+      />
     </div>
   )
 }
