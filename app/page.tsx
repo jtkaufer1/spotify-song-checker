@@ -72,13 +72,9 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Music className="h-6 w-6 text-accent" />
-            <h1 className="text-xl font-semibold text-foreground">Song Criteria Checker</h1>
+            <h1 className="text-xl font-semibold text-foreground">Song Checker</h1>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" onClick={() => setShowCriteria(true)} className="text-sm">
-              <Shield className="h-4 w-4 mr-2" />
-              View Criteria
-            </Button>
             <AdminLogin />
           </div>
         </div>
@@ -89,7 +85,7 @@ export default function HomePage() {
         <div className="max-w-2xl mx-auto text-center mb-12">
           <h2 className="text-4xl font-bold text-foreground mb-4">Check if Your Song Meets Our Criteria</h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Search for any song on Spotify and instantly see if it passes our streaming and artist criteria
+            Search for any song on Spotify
           </p>
 
           {/* Search Form */}
@@ -111,7 +107,7 @@ export default function HomePage() {
           </form>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <Card>
               <CardContent className="p-4 text-center">
                 <TrendingUp className="h-8 w-8 text-accent mx-auto mb-2" />
@@ -133,22 +129,12 @@ export default function HomePage() {
                 <div className="text-sm text-muted-foreground">Banned Artists</div>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <Shield className="h-8 w-8 text-accent mx-auto mb-2" />
-                <div className="text-2xl font-bold text-foreground">Real-time</div>
-                <div className="text-sm text-muted-foreground">Criteria Check</div>
-              </CardContent>
-            </Card>
           </div>
         </div>
 
         {/* Search Results */}
         <SearchResults results={searchResults} isLoading={isSearching} />
       </main>
-
-      {/* Criteria Display Modal */}
-      <CriteriaDisplay open={showCriteria} onOpenChange={setShowCriteria} />
 
       {/* Banned Artists Modal */}
       <BannedArtistsModal
