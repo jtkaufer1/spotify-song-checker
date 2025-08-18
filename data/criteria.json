@@ -1,0 +1,7 @@
+{
+  "maxStreams": 10000,
+  "bannedArtists": [
+    "Kanye West",
+    "Kane Brown"
+  ]
+}
