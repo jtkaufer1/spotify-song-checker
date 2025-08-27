@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Search, Music, Shield, Users, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,35 @@ export default function HomePage() {
   const [showBannedArtists, setShowBannedArtists] = useState(false)
   const [criteria, setCriteria] = useState({ maxStreams: 1000000, bannedArtists: [] })
   const [isLoadingCriteria, setIsLoadingCriteria] = useState(true)
+
+  const performSearch = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([])
+      return
+    }
+
+    setIsSearching(true)
+    try {
+      const response = await fetch(`/api/spotify/search-tracks?q=${encodeURIComponent(query)}`)
+      const data = await response.json()
+      setSearchResults(data.tracks || [])
+    } catch (error) {
+      console.error("Search failed:", error)
+      setSearchResults([])
+    } finally {
+      setIsSearching(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery) {
+        performSearch(searchQuery)
+      }
+    }, 1000)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery, performSearch])
 
   useEffect(() => {
     const fetchCriteria = async () => {
@@ -41,20 +70,14 @@ export default function HomePage() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!searchQuery.trim()) return
-
-    setIsSearching(true)
-    try {
-      const response = await fetch(`/api/spotify/search-tracks?q=${encodeURIComponent(searchQuery)}`)
-      const data = await response.json()
-      setSearchResults(data.tracks || [])
-    } catch (error) {
-      console.error("Search failed:", error)
-      setSearchResults([])
-    } finally {
-      setIsSearching(false)
-    }
+    performSearch(searchQuery)
   }
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        performSearch(searchQuery)
+      }
+    }
 
   const formatStreamCount = (count: number) => {
     if (count >= 1000000) {
@@ -68,11 +91,11 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-border" style={{ backgroundColor: "#9e00c4" }}>
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Music className="h-6 w-6 text-accent" />
-            <h1 className="text-xl font-semibold text-foreground">Song Checker</h1>
+            <Music className="h-6 w-6 text-white" />
+            <h1 className="text-xl font-semibold text-white">Song Criteria Checker</h1>
           </div>
           <div className="flex items-center gap-4">
             <AdminLogin />
@@ -97,6 +120,7 @@ export default function HomePage() {
                 placeholder="Enter song title or artist..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
                 className="pl-10 h-12 text-base"
                 disabled={isSearching}
               />

@@ -1,7 +1,11 @@
-// Types for our criteria system
 export interface CriteriaConfig {
   maxStreams: number
   bannedArtists: string[]
+}
+
+export const DEFAULT_CRITERIA: CriteriaConfig = {
+  maxStreams: 500000000,
+  bannedArtists: [],
 }
 
 export interface TrackCheckResult {
@@ -12,12 +16,6 @@ export interface TrackCheckResult {
     artists: string[]
     estimatedStreams: number
   }
-}
-
-// Default criteria configuration
-export const DEFAULT_CRITERIA: CriteriaConfig = {
-  maxStreams: 1000000, // 1 million streams
-  bannedArtists: [],
 }
 
 // Check if a track passes the criteria

@@ -30,7 +30,7 @@ export function BannedArtistsModal({ open, onOpenChange, bannedArtists }: Banned
               <p className="text-sm">Admin can add artists to the banned list</p>
             </div>
           ) : (
-            <ScrollArea className="h-[300px] pr-4">
+            <ScrollArea className="h-[300px]">
               <div className="space-y-2">
                 {bannedArtists.map((artist, index) => (
                   <Card key={index} className="border-border/50">
